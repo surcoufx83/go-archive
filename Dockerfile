@@ -1,4 +1,4 @@
-# Use the official Golang image to build the Go application
+# Use the official Golang image to build and run the Go application
 FROM golang:1.22 as builder
 
 # Set the Current Working Directory inside the container
@@ -13,17 +13,21 @@ RUN go mod download
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
+# Copy the .env file
+COPY .env .env
+
 # Build the Go app
 RUN go build -o main .
 
-# Start a new stage from scratch
-FROM golang:1.22  
+# Use the same base image for the final stage
+FROM golang:1.22
 
 # Set the Current Working Directory inside the container
-WORKDIR /app/
+WORKDIR /app
 
-# Copy the Pre-built binary file from the previous stage
+# Copy the Pre-built binary file and .env from the previous stage
 COPY --from=builder /app/main .
+COPY --from=builder /app/.env .
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
