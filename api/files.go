@@ -3,7 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
+	"go-archive/utils"
 	"net/http"
 	"strconv"
 
@@ -42,8 +42,7 @@ func GetFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		log.Printf("Invalid file ID: %v", err)
-		http.Error(w, "Invalid file ID", http.StatusBadRequest)
+		utils.LogErrorAndReturnCode(w, "Invalid file ID", err, http.StatusBadRequest)
 		return
 	}
 
@@ -56,15 +55,13 @@ func GetFile(w http.ResponseWriter, r *http.Request) {
 		if err == sql.ErrNoRows {
 			http.NotFound(w, r)
 		} else {
-			log.Printf("Error querying database: %v", err)
-			http.Error(w, "Error querying database", http.StatusInternalServerError)
+			utils.LogErrorAndReturnCode(w, "Error querying database", err, http.StatusInternalServerError)
 		}
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(file); err != nil {
-		log.Printf("Error encoding response: %v", err)
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		utils.LogErrorAndReturnCode(w, "Error encoding response", err, http.StatusInternalServerError)
 	}
 }

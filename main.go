@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"go-archive/api"
+	"go-archive/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -44,9 +45,14 @@ func main() {
 	}()
 
 	r := mux.NewRouter()
+
+	// Register middleware
+	r.Use(utils.LoggingMiddleware)
+
 	r.HandleFunc("/api/helloworld", api.HelloWorld).Methods("GET")
 	r.HandleFunc("/api/checkdb", api.CheckDBConnection).Methods("GET")
 	r.HandleFunc("/api/file/{id:[0-9]+}", api.GetFile).Methods("GET")
+	r.HandleFunc("/api/auth/oauth2", api.NextcloudOAuth2).Methods("POST")
 
 	fmt.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
